@@ -1,4 +1,5 @@
 captainVersion: 4
+
 services:
     $$cap_appname:
         environment:
@@ -8,6 +9,18 @@ services:
             database__connection__password: $$cap_db_password
             database__connection__database: $$cap_db_name
             url: $$cap_ghost_url
+            mail__transport: SMTP
+            mail__options__service: $$cap_mail_service
+            mail__options__host: $$cap_mail_host
+            mail__options__port: $$cap_mail_port
+            mail__options__secure: $$cap_mail_secure
+            mail__options__auth__user: $$cap_mail_user
+            mail__options__auth__pass: $$cap_mail_pass
+            portal__url: $$cap_portal_url
+            sodoSearch__url: $$cap_search_url
+            sodoSearch__styles: $$cap_search_styles
+            comments__url: $$cap_comments_url
+            comments__styles: $$cap_comments_styles
         image: ghost:latest
         restart: always
         volumes:
@@ -23,7 +36,7 @@ services:
             MYSQL_USER: $$cap_db_user
             MYSQL_PASSWORD: $$cap_db_password
             MYSQL_DATABASE: $$cap_db_name
-        image: mysql:latest
+        image: mysql:8.4.3
         restart: always
         volumes:
             - $$cap_appname-db-data:/var/lib/mysql
@@ -40,7 +53,7 @@ caproverOneClickApp:
           description: Benutzername für den dedizierten Ghost-Datenbankbenutzer
           id: $$cap_db_user
           label: MySQL Ghost Benutzer
-          validRegex: /^([^\s^\/])+$/ 
+          validRegex: /^([^\s^\/])+$/
         - defaultValue: $$cap_gen_random_hex(16)
           description: Passwort für den dedizierten Ghost-Datenbankbenutzer
           id: $$cap_db_password
@@ -49,10 +62,55 @@ caproverOneClickApp:
           description: Name der Datenbank für Ghost
           id: $$cap_db_name
           label: MySQL Ghost Datenbankname
-        - defaultValue: 'https://test.apps.server.optimizemefy.de'
+        - defaultValue: 'https://test.server.optimizemefy.de'
           description: Die URL, unter der Ihr Ghost-Blog erreichbar ist (inkl. "https://")
           id: $$cap_ghost_url
           label: Ghost URL
+        - defaultValue: Brevo
+          description: Mail-Service-Anbieter (z.B. Mailgun, SMTP)
+          id: $$cap_mail_service
+          label: Mail Service
+        - defaultValue: smtp-relay.brevo.com
+          description: Hostname des Mail-Servers (z.B. smtp.mailgun.org)
+          id: $$cap_mail_host
+          label: Mail Host
+        - defaultValue: '587'
+          description: Port des Mail-Servers (z.B. 587 für TLS, 465 für SSL)
+          id: $$cap_mail_port
+          label: Mail Port
+        - defaultValue: 'false'
+          description: Sichere Verbindung aktivieren (true für SSL, false für TLS)
+          id: $$cap_mail_secure
+          label: Mail Secure (SSL/TLS)
+          validRegex: /^(true|false)$/
+        - defaultValue: postmaster@example.com
+          description: Benutzername (z.B. E-Mail) für den Mail-Dienst
+          id: $$cap_mail_user
+          label: Mail Benutzername
+        - description: Passwort für den Mail-Dienst
+          id: $$cap_mail_pass
+          label: Mail Passwort
+          validRegex: /^.{8,}$/
+        - defaultValue: https://cdn.jsdelivr.net/npm/@tryghost/portal@latest/umd/portal.min.js
+          description: URL für das Portal-Skript
+          id: $$cap_portal_url
+          label: Portal URL
+        - defaultValue: https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@latest/umd/sodo-search.min.js
+          description: URL für das SodoSearch-Skript
+          id: $$cap_search_url
+          label: SodoSearch URL
+        - defaultValue: https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@latest/umd/main.css
+          description: URL für SodoSearch Styles
+          id: $$cap_search_styles
+          label: SodoSearch Styles
+        - defaultValue: https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@latest/umd/comments-ui.min.js
+          description: URL für das Comments-Skript
+          id: $$cap_comments_url
+          label: Comments URL
+        - defaultValue: https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@latest/umd/main.css
+          description: URL für Comments Styles
+          id: $$cap_comments_styles
+          label: Comments Styles
 
     instructions:
         start: Ghost ist eine Plattform für moderne Online-Veröffentlichungen und eignet sich für Blogs und Magazine.
@@ -62,7 +120,7 @@ caproverOneClickApp:
             - Aktivieren Sie HTTPS, um die Sicherheit zu erhöhen.
 
             Hinweis: Es kann bis zu 2 Minuten dauern, bis Ghost vollständig einsatzbereit ist. Bis dahin kann eine 502-Fehlerseite angezeigt werden.
-    
+
     displayName: 'Ghost'
     isOfficial: true
     description: Ghost ist eine Open-Source-Blogging-Plattform, die in JavaScript geschrieben wurde und unter der MIT-Lizenz vertrieben wird.
