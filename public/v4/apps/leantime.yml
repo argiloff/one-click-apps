@@ -1,0 +1,80 @@
+captainVersion: 4
+services:
+    $$cap_appname-mysql:
+        volumes:
+            - $$cap_appname-mysql-data:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: leantime
+            MYSQL_ROOT_PASSWORD: $$cap_mysql_passwd
+            MYSQL_USER: leantimeuser
+            MYSQL_PASSWORD: $$cap_mysql_passwd
+        caproverExtra:
+            dockerfileLines:
+                - FROM mysql:8.4
+                - CMD ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+    $$cap_appname:
+        image: leantime/leantime:$$cap_leantime_ver
+        container_name: leantime
+        volumes:
+            - $$cap_appname-public-userfiles-data:/var/www/html/public/userfiles
+            - $$cap_appname-userfiles-data:/var/www/html/userfiles
+            - $$cap_appname-plugins-data:/var/www/html/app/Plugins
+            - $$cap_appname-logs-data:/var/www/html/storage/logs
+        environment:
+            PUID: 1000
+            PGID: 1000
+            LEAN_PORT: 8080
+            LEAN_APP_URL: https://$$cap_appname.$$cap_root_domain
+            LEAN_APP_DIR: ''
+            LEAN_DEBUG: 1
+            LEAN_DB_HOST: srv-captain--$$cap_appname-mysql
+            LEAN_DB_USER: leantimeuser
+            LEAN_DB_PASSWORD: $$cap_mysql_passwd
+            LEAN_DB_DATABASE: leantime
+            LEAN_DB_PORT: 3306
+            LEAN_DEFAULT_TIMEZONE: $$cap_timezone
+            LEAN_SESSION_PASSWORD: $$cap_gen_random_hex(32)
+            LEAN_SESSION_EXPIRATION: 28800
+            LEAN_SESSION_SECURE: false
+        caproverExtra:
+            containerHttpPort: '8080'
+caproverOneClickApp:
+    variables:
+        - id: $$cap_mysql_passwd
+          label: MySQL-Benutzerpasswort
+          description: Benutzerpasswort für die Datenbankinstanz.
+          defaultValue: $$cap_gen_random_hex(16)
+          validRegex: /^(?=.*\d).{10,}$/
+        - id: $$cap_leantime_ver
+          label: Leantime-Version
+          description: 'Gültige Tags findest du auf der Docker-Seite: https://hub.docker.com/r/leantime/leantime'
+          defaultValue: latest
+          validRegex: /.+/
+        - id: $$cap_timezone
+          label: Zeitzone
+          description: Dies ist die Zeitzone der Anwendung. Finde deine unter https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+          defaultValue: Europe/Vienna
+    instructions:
+        start: |-
+            Leantime ist ein Open‑Source‑Projektmanagementsystem für kleine Teams und Startups, entwickelt in PHP und JavaScript mit MySQL. Es unterstützt dich dabei, Projekte von der Idee bis zur Auslieferung zu managen.
+
+            Weitere Informationen findest du unter https://leantime.io
+        end: |-
+            ✅  Leantime wurde erfolgreich bereitgestellt und ist in Kürze unter https://$$cap_appname.$$cap_root_domain verfügbar!
+
+            ❗️ **WICHTIG**: Bevor du auf das Leantime‑Dashboard zugreifst, musst du HTTPS aktivieren:
+
+            **Schritt 1**: Öffne die Einstellungen von `$$cap_appname`
+            **Schritt 2**: Aktiviere **HTTPS**
+
+            -------------------------------------------- 
+            🔰 Weitere Informationen zur Ersteinrichtung findest du unter https://docs.leantime.io/#/.
+    displayName: Leantime
+    isOfficial: true
+    description: Leantime ist ein Open‑Source‑Projektmanagementsystem für kleine Teams und Startups, entwickelt in PHP und JavaScript mit MySQL.
+    documentation: Weitere Informationen zur Ersteinrichtung findest du unter https://docs.leantime.io/#/. Diese Vorlage wurde unter Verwendung der Variablen aus https://github.com/Leantime/docker-leantime/blob/master/docker-compose.yml erstellt.
